@@ -1,6 +1,4 @@
 #spotify
-#client secret: 6f5e550b3da546b89769447f743187b7
-#client ID: c23b1f6bf08b432ba41e399c5875041d
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 

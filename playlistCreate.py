@@ -8,7 +8,7 @@ logger = logging.getLogger('examples.create_playlist')
 logging.basicConfig(level='DEBUG')
 
 
-def get_args():
+def get_args_playlistCreate():
     parser = argparse.ArgumentParser(description='Creates a playlist for user')
     parser.add_argument('-p', '--playlist', required=True,
                         help='Name of Playlists')
@@ -18,7 +18,7 @@ def get_args():
 
 
 def main():
-    args = get_args()
+    args = get_args_playlistCreate()
     scope = "playlist-modify-public"
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope,
                                                    client_id="c23b1f6bf08b432ba41e399c5875041d",
