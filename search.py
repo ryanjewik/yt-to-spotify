@@ -14,5 +14,11 @@ sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_
                                                                          client_secret="6f5e550b3da546b89769447f743187b7"))
 result = sp.search(search_str,limit = 50, offset = 0)
 pprint.pprint(result['tracks']['items'][49]['name'])
+pprint.pprint(result['tracks']['total'])
+for x in range(int(result['tracks']['total'] / 50)):
+    result = sp.search(search_str, limit = 50, offset = x)
+    for y in range(50):
+        pprint.pprint(result['tracks']['items'][y]['name'])
+
 #pprint.pprint(result['tracks']['items'][6]['name'])
 #pprint.pprint(result['tracks']['items'][6]['external_urls']['spotify'])

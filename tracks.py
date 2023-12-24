@@ -12,6 +12,12 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 if len(sys.argv) > 1:
     artist_name = ' '.join(sys.argv[1:])
-    results = sp.search(q=artist_name, limit=20)
-    for i, t in enumerate(results['tracks']['items']):
-        print(' ', i, t['name'])
+    results = sp.search(q=artist_name, limit=50, offset = 0)
+    for x in range(50):
+        print(results['tracks']['items'][x]['name'])
+    results = sp.search(q=artist_name, limit=50, offset = 50)
+    print("----------------------------------------------------------------------------------------------------")
+    for x in range(50):
+        print(results['tracks']['items'][x]['name'])
+    #for i, t in enumerate(results['tracks']['items']):
+     #   print(' ', i, t['name'])

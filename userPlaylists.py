@@ -20,3 +20,5 @@ playlists = sp.user_playlists(username)
 
 for playlist in playlists['items']:
     print(playlist['name'])
+    print(playlist['uri'][17:])
+    
