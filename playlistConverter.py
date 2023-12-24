@@ -7,6 +7,8 @@ from spotipy.oauth2 import SpotifyOAuth
 
 
 #youtube imports
+
+# API client library
 import googleapiclient.discovery
 # API information
 api_service_name = "youtube"
@@ -24,7 +26,6 @@ request = youtube.playlists().list(
     maxResults=40
 )
 response = request.execute()
-#finds the playlistID
 for x in range(len(response['items'])):
     if (response['items'][x]['snippet']['title']) == 'JapJam':
         index = x
@@ -39,16 +40,31 @@ request = youtube.playlistItems().list(
 )
 # Query execution
 response = request.execute()
-
-#finds the number pages it must loop through
 loops = response['pageInfo']['totalResults'] / response['pageInfo']['resultsPerPage']
 if loops % 1 < .5:
     loops +=1
 loops = round(loops)
 titles = []
-for i in range(50):#adds the first 50 from the first call
-    titles.append(response['items'][i]['snippet']['title'])
-for x in range(loops - 1): #finds the next page
+artists = []
+
+for i in range(50):
+    if response['items'][i]['snippet']['title'] != "Deleted video" and response['items'][i]['snippet']['title'] != ("Private video"):
+        #print("adding: " + response['items'][i]['snippet']['title'])
+        titles.append(response['items'][i]['snippet']['title'])
+        if response['items'][i]['snippet']['videoOwnerChannelTitle'][-8:] == " - Topic":
+                
+            try:
+                artists.append(response['items'][i]['snippet']['videoOwnerChannelTitle'][:-8])
+            except:
+                artists.append(response['items'][i]['snippet']['title'])
+                print("failed for " + response['items'][y]['snippet']['title'] + " at index " + str(y))
+        else:
+            try:
+                artists.append(response['items'][i]['snippet']['videoOwnerChannelTitle'])
+            except:
+                artists.append(response['items'][i]['snippet']['title'])
+                print("failed for " + response['items'][y]['snippet']['title'] + " at index " + str(y))
+for x in range(loops - 1):
     nextPageToken = response['nextPageToken']
     request = youtube.playlistItems().list(
     part="snippet",
@@ -57,19 +73,38 @@ for x in range(loops - 1): #finds the next page
     playlistId=playlistID
     )
     response = request.execute()
-    for y in range(len(response['items'])): #adds the next group of songs
-        titles.append(response['items'][y]['snippet']['title'])
+    for y in range(len(response['items'])):
+        if response['items'][y]['snippet']['title'] != "Deleted video" and response['items'][y]['snippet']['title'] != ("Private video"):
+
+            titles.append(response['items'][y]['snippet']['title'])
+            #print(response['items'][y]['snippet']['videoOwnerChannelTitle'])
+            if response['items'][y]['snippet']['videoOwnerChannelTitle'][-7:] == "- Topic":
+                
+                try:
+                    artists.append(response['items'][y]['snippet']['videoOwnerChannelTitle'][:-8])
+                except:
+                    artists.append(response['items'][y]['snippet']['title'])
+                    print("failed for " + response['items'][y]['snippet']['title'] + " at index " + str(y))
+            else:
+                try:
+                    artists.append(response['items'][y]['snippet']['videoOwnerChannelTitle'])
+                except:
+                    artists.append(response['items'][y]['snippet']['title'])
+                    print("failed for " + response['items'][y]['snippet']['title'] + " at index " + str(y))
 
 # Print the results
-print(titles)
+#print(titles)
+print(artists)
 print(len(titles))
-for x in titles:
-    if x == "Deleted video":
-        titles.remove(x)
+for x in range(len(titles)):
+    if titles[x] == "Deleted video":
+        titles.remove(titles[x])
+        artists.remove(artists[x])
 print(len(titles))
+print(len(artists))
 
 #---------------------------------------------------youtube section-------------------------------------
-
+"""
 #creates the playlist
 logger = logging.getLogger('examples.create_playlist')
 logging.basicConfig(level='DEBUG')
@@ -94,13 +129,6 @@ user_id = sp.me()['id']
 sp.user_playlist_create(user_id, args.playlist)
 
 
-"""
-Must combine the playlist creation and adding of tracks together
-Some questions that I must answer:
- - how do I use the playlist I just created?
-  - how do I convert the tracks to links?
-
-"""
 
 
 
@@ -130,4 +158,4 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope,
                                                 redirect_uri="http://localhost:3000"))
 sp.playlist_add_items(args.playlist, args.uris)
 
-
+"""
