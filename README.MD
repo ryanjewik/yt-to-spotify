@@ -1,4 +1,5 @@
 installations:
+ - pip install -r requirements.txt
  - pip install fugashi[unidic]
  - python -m unidic download
  - pip install fugashi[unidic-lite]
