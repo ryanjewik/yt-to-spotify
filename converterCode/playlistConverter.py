@@ -54,20 +54,28 @@ artists = []
 for i in range(50):
     if response['items'][i]['snippet']['title'] != "Deleted video" and response['items'][i]['snippet']['title'] != ("Private video"):
         #print("adding: " + response['items'][i]['snippet']['title'])
-        titles.append(katsu.romaji(response['items'][i]['snippet']['title']))
+        if " Eve " in response['items'][i]['snippet']['title']:
+            try:
+                titles.append(katsu.romaji(response['items'][i]['snippet']['title'][:-8]))
+            except:
+                titles.append(response['items'][i]['snippet']['title'])
+                print("failed for " + response['items'][i]['snippet']['title'] + " at index " + str(i))
+        else:
+            titles.append(katsu.romaji(response['items'][i]['snippet']['title']))
         if response['items'][i]['snippet']['videoOwnerChannelTitle'][-8:] == " - Topic":
                 
             try:
                 artists.append(response['items'][i]['snippet']['videoOwnerChannelTitle'][:-8])
             except:
                 artists.append(response['items'][i]['snippet']['title'])
-                print("failed for " + response['items'][i]['snippet']['title'] + " at index " + str(y))
+                print("failed for " + response['items'][i]['snippet']['title'] + " at index " + str(i))
+
         else:
             try:
                 artists.append(response['items'][i]['snippet']['videoOwnerChannelTitle'])
             except:
                 artists.append(response['items'][i]['snippet']['title'])
-                print("failed for " + response['items'][i]['snippet']['title'] + " at index " + str(y))
+                print("failed for " + response['items'][i]['snippet']['title'] + " at index " + str(i))
 for x in range(loops - 1):
     nextPageToken = response['nextPageToken']
     request = youtube.playlistItems().list(
@@ -79,8 +87,16 @@ for x in range(loops - 1):
     response = request.execute()
     for y in range(len(response['items'])):
         if response['items'][y]['snippet']['title'] != "Deleted video" and response['items'][y]['snippet']['title'] != ("Private video"):
-
-            titles.append(katsu.romaji(response['items'][y]['snippet']['title']))
+            if " Eve " in response['items'][y]['snippet']['title']:
+                try:
+                    titles.append(katsu.romaji(response['items'][y]['snippet']['title'][:-8]))
+                    #print(response['items'][y]['snippet']['title'])
+                    #print(response['items'][y]['snippet']['title'][:-9])
+                except:
+                    titles.append(response['items'][y]['snippet']['title'])
+                    print("failed for " + response['items'][y]['snippet']['title'] + " at index " + str(i))
+            else:
+                titles.append(katsu.romaji(response['items'][y]['snippet']['title']))
             #print(response['items'][y]['snippet']['videoOwnerChannelTitle'])
             if response['items'][y]['snippet']['videoOwnerChannelTitle'][-7:] == "- Topic":
                 
@@ -178,45 +194,52 @@ for x in range(len(titles)):
         loopsForTracks +=1
     loopsForTracks = round(loopsForTracks)
     found = False
-    giveUp = False
+    couldNotFind = False
     #print("title: " + titles[x])
     #print("person: " + artistName)
-    while (found == False and giveUp == False):
-        for y in range (50):
-            if katsu.romaji(result['tracks']['items'][y]['name']) in titles[x]:
-                sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
-                                               client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                               client_secret="6f5e550b3da546b89769447f743187b7",
-                                               redirect_uri="http://localhost:3000"))
-                trackID = ['']
-                trackID[0] = result['tracks']['items'][y]['external_urls']['spotify']
-                sp.playlist_add_items(createdPlaylistId, trackID)
-                print("adding: " + titles[x])
-                #function for adding placed here
-                found = True
-                continue
+    while (found == False and couldNotFind == False):
         
-        for y in range(loopsForTracks):
-            result = sp.search(artistName, limit = 50, offset = y * 50)
-            for z in range(50):
-                if katsu.romaji(result['tracks']['items'][z]['name']) in titles[x]:
+        for y in range (len(result['tracks']['items'])):
+            if found == False:
+                if katsu.romaji(result['tracks']['items'][y]['name']) in titles[x]:
+                    #print(result['tracks']['items'][y]['name'])
                     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
-                                               client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                               client_secret="6f5e550b3da546b89769447f743187b7",
-                                               redirect_uri="http://localhost:3000"))
+                                                client_id="c23b1f6bf08b432ba41e399c5875041d",
+                                                client_secret="6f5e550b3da546b89769447f743187b7",
+                                                redirect_uri="http://localhost:3000"))
                     trackID = ['']
-                    trackID[0] = result['tracks']['items'][z]['external_urls']['spotify']
+                    trackID[0] = result['tracks']['items'][y]['external_urls']['spotify']
                     sp.playlist_add_items(createdPlaylistId, trackID)
                     print("adding: " + titles[x])
                     #function for adding placed here
                     found = True
                     continue
         
-        giveUp = True
-    if giveUp == True:
-        print("failed to find: " + titles[x] + " by "+ artistName)
-    elif found == True:
-        print("found: " + titles[x] + " by "+ artistName)
+        for y in range(loopsForTracks):
+            if found == False:
+                result = sp.search(artistName, limit = 50, offset = y * 50)
+                for z in range(len(result['tracks']['items'])):
+                    #print(result['tracks']['items'][z]['name'])
+                    if katsu.romaji(result['tracks']['items'][z]['name']) in titles[x]:
+                        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
+                                                client_id="c23b1f6bf08b432ba41e399c5875041d",
+                                                client_secret="6f5e550b3da546b89769447f743187b7",
+                                                redirect_uri="http://localhost:3000"))
+                        trackID = ['']
+                        trackID[0] = result['tracks']['items'][z]['external_urls']['spotify']
+                        sp.playlist_add_items(createdPlaylistId, trackID)
+                        print("adding: " + titles[x])
+                        #function for adding placed here
+                        found = True
+                        continue
+        if found == False:
+            couldNotFind = True
+
+
+    if found == False:
+        print("Could not find: " + titles[x])
+        
+
 
 
 
