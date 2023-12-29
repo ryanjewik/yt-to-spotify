@@ -24,10 +24,10 @@ youtube = googleapiclient.discovery.build(
     api_service_name, api_version, developerKey = DEVELOPER_KEY)
 
 #user must input these themselves
-clientId = "c23b1f6bf08b432ba41e399c5875041d"
-clientSecret = "6f5e550b3da546b89769447f743187b7"
-playlistName = 'JapJam'
-channel_id = "UCz6IPC7i4PQGMPtfhV01H6w"
+clientId = ""
+clientSecret = ""
+playlistName = ''
+channel_id = ""
 
 
 #retrieve the playlist ID using the channel ID
@@ -43,6 +43,8 @@ for x in range(len(response['items'])): #looks for my playlist named "JapJam"
 playlistID = response['items'][index]['id']
 
 
+
+#----------------------------Reads youtube playlist-----------------------------------
 #get the video IDs from the playlist, only comes in groups of up to 50
 request = youtube.playlistItems().list(
     part="snippet",
@@ -224,7 +226,7 @@ print("playlist id: " + createdPlaylistId)
 #then we will use the list of artists names and titles to get the links for the songs
 
 
-
+#----------------------------adds songs to spotify playlist-----------------------------------
 sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=clientId,
                                                                          client_secret=clientSecret))
 for x in range(len(titles)):
