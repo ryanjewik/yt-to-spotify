@@ -50,32 +50,63 @@ if loops % 1 < .5:
 loops = round(loops)
 titles = []
 artists = []
+jpnTitles = []
+jpnArtist = []
 
 for i in range(50):
+    title = ""
+    artist = ""
+    jpnWord = ""
+    jpnChannel = ""
     if response['items'][i]['snippet']['title'] != "Deleted video" and response['items'][i]['snippet']['title'] != ("Private video"):
-        #print("adding: " + response['items'][i]['snippet']['title'])
-        if " Eve " in response['items'][i]['snippet']['title']:
-            try:
-                titles.append(katsu.romaji(response['items'][i]['snippet']['title'][:-8]))
-            except:
-                titles.append(response['items'][i]['snippet']['title'])
-                print("failed for " + response['items'][i]['snippet']['title'] + " at index " + str(i))
-        else:
-            titles.append(katsu.romaji(response['items'][i]['snippet']['title']))
+        
         if response['items'][i]['snippet']['videoOwnerChannelTitle'][-8:] == " - Topic":
-                
-            try:
-                artists.append(response['items'][i]['snippet']['videoOwnerChannelTitle'][:-8])
-            except:
-                artists.append(response['items'][i]['snippet']['title'])
-                print("failed for " + response['items'][i]['snippet']['title'] + " at index " + str(i))
-
+            artist = (response['items'][i]['snippet']['videoOwnerChannelTitle'][:-8]).lower()
+            
         else:
-            try:
-                artists.append(response['items'][i]['snippet']['videoOwnerChannelTitle'])
-            except:
-                artists.append(response['items'][i]['snippet']['title'])
-                print("failed for " + response['items'][i]['snippet']['title'] + " at index " + str(i))
+            artist = (response['items'][i]['snippet']['videoOwnerChannelTitle']).lower()
+        artist = artist.replace("official", "")
+        artist = artist.replace(" channel", "")
+        artist = artist.replace(" youtube", "")
+        title = katsu.romaji(response['items'][i]['snippet']['title']).lower()
+        title = title.replace(" - ", "")
+        title = title.replace("mv", "")
+        title = title.replace("eve", "")
+        title = title.replace(" official", "")
+        title = title.replace(" youtube", "")
+        title = title.replace(" video", "")
+        title = title.replace(" music video", "")
+        title = title.replace(" music ", "")
+        title = title.replace(" music", "")
+        title = title.replace("(music)", "")
+        title = title.replace("[", "")
+        title = title.replace("]", "")
+        title = title.replace("first take", "")
+        title = title.strip()
+        artist = artist.strip()
+        title.replace(artist, "")
+        artists.append(artist)
+        titles.append(title)
+
+        jpnWord = (response['items'][i]['snippet']['title']).lower()
+        jpnChannel = (response['items'][i]['snippet']['videoOwnerChannelTitle']).lower()
+        jpnWord = jpnWord.replace("[", "")
+        jpnWord = jpnWord.replace("]", "")
+        jpnWord = jpnWord.replace(" - ", "")
+        jpnWord = jpnWord.replace("mv", "")
+        jpnChannel = jpnChannel.replace(" - topic", "")
+        jpnChannel = jpnChannel.replace("official", "")
+        jpnChannel = jpnChannel.replace(" channel", "")
+        jpnChannel = jpnChannel.replace(" youtube", "")
+        jpnChannel = jpnChannel.strip()
+        jpnWord = jpnWord.strip()
+        jpnWord = jpnWord.replace(jpnChannel, "")
+
+        jpnTitles.append(jpnWord)
+        jpnArtist.append(jpnChannel)
+        
+
+
 for x in range(loops - 1):
     nextPageToken = response['nextPageToken']
     request = youtube.playlistItems().list(
@@ -86,31 +117,54 @@ for x in range(loops - 1):
     )
     response = request.execute()
     for y in range(len(response['items'])):
+        artist = ""
+        title = ""
+        jpnWord = ""
+        jpnChannel = ""
         if response['items'][y]['snippet']['title'] != "Deleted video" and response['items'][y]['snippet']['title'] != ("Private video"):
-            if " Eve " in response['items'][y]['snippet']['title']:
-                try:
-                    titles.append(katsu.romaji(response['items'][y]['snippet']['title'][:-8]))
-                    #print(response['items'][y]['snippet']['title'])
-                    #print(response['items'][y]['snippet']['title'][:-9])
-                except:
-                    titles.append(response['items'][y]['snippet']['title'])
-                    print("failed for " + response['items'][y]['snippet']['title'] + " at index " + str(i))
+            if response['items'][y]['snippet']['videoOwnerChannelTitle'][-8:] == " - Topic":
+                artist = (response['items'][y]['snippet']['videoOwnerChannelTitle'][:-8]).lower()
             else:
-                titles.append(katsu.romaji(response['items'][y]['snippet']['title']))
-            #print(response['items'][y]['snippet']['videoOwnerChannelTitle'])
-            if response['items'][y]['snippet']['videoOwnerChannelTitle'][-7:] == "- Topic":
-                
-                try:
-                    artists.append(response['items'][y]['snippet']['videoOwnerChannelTitle'][:-8])
-                except:
-                    artists.append(response['items'][y]['snippet']['title'])
-                    print("failed for " + response['items'][y]['snippet']['title'] + " at index " + str(y))
-            else:
-                try:
-                    artists.append(response['items'][y]['snippet']['videoOwnerChannelTitle'])
-                except:
-                    artists.append(response['items'][y]['snippet']['title'])
-                    print("failed for " + response['items'][y]['snippet']['title'] + " at index " + str(y))
+                artist = (response['items'][y]['snippet']['videoOwnerChannelTitle']).lower()
+            jpnChannel = jpnChannel.replace(" - topic", "")
+            artist = artist.replace("official", "")
+            artist = artist.replace(" channel", "")
+            artist = artist.replace(" youtube", "")
+            title = katsu.romaji(response['items'][y]['snippet']['title']).lower()
+            title = title.replace(" - ", "")
+            title = title.replace("mv", "")
+            title = title.replace("eve", "")
+            title = title.replace(" official", "")
+            title = title.replace("official", "")
+            title = title.replace(" youtube", "")
+            title = title.replace(" video", "")
+            title = title.replace(" music video", "")
+            title = title.replace(" music ", "")
+            title = title.replace(" music", "")
+            title = title.replace("(music)", "")
+            title = title.replace("[", "")
+            title = title.replace("]", "")
+            title = title.replace("first take", "")
+            title = title.strip()
+            artist = artist.strip()
+            title.replace(artist, "")
+            artists.append(artist)
+            titles.append(title)
+            jpnWord = (response['items'][y]['snippet']['title']).lower()
+            jpnChannel = (response['items'][y]['snippet']['videoOwnerChannelTitle']).lower()
+            jpnWord = jpnWord.replace("[", "")
+            jpnWord = jpnWord.replace("]", "")
+            jpnWord = jpnWord.replace(" - ", "")
+            jpnWord = jpnWord.replace("mv", "")
+            jpnChannel = jpnChannel.replace("official", "")
+            jpnChannel = jpnChannel.replace(" channel", "")
+            jpnChannel = jpnChannel.replace(" youtube", "")
+            jpnChannel = jpnChannel.strip()
+            jpnWord = jpnWord.strip()
+            jpnWord = jpnWord.replace(jpnChannel, "")
+
+            jpnTitles.append(jpnWord)
+            jpnArtist.append(jpnChannel)
 
 # Print the results
 #print(titles)
@@ -187,13 +241,15 @@ sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_
 for x in range(len(titles)):
     artistName = artists[x]
     titleName = titles[x]
+    jpnTitle = jpnTitles[x]
+    jpnName = jpnArtist[x]
     query = "artist:"+artistName
+    backupQuery = "artist:" + jpnName
     #query = "artist:Aimer track:Katamoi"
     #print("query:" + query)
     result = sp.search(query,type = 'track', limit = 50, offset = 0)
-    
-    #pprint.pprint(result['tracks']['items'][49]['name'])
-    pprint.pprint(result['tracks']['total'])
+
+    #pprint.pprint(result['tracks']['total'])
     loopsForTracks = result['tracks']['total'] / 100
     if loopsForTracks % 1 < 0.5:
         loopsForTracks +=1
@@ -206,26 +262,43 @@ for x in range(len(titles)):
         
         for y in range (len(result['tracks']['items'])):
             if found == False:
-                if katsu.romaji(result['tracks']['items'][y]['name']) in titles[x]:
-                    #print(result['tracks']['items'][y]['name'])
-                    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
-                                                client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                                client_secret="6f5e550b3da546b89769447f743187b7",
-                                                redirect_uri="http://localhost:3000"))
-                    trackID = ['']
-                    trackID[0] = result['tracks']['items'][y]['external_urls']['spotify']
-                    sp.playlist_add_items(createdPlaylistId, trackID)
-                    print("adding: " + titles[x])
-                    #function for adding placed here
-                    found = True
-                    continue
+                try:
+                    if (katsu.romaji(result['tracks']['items'][y]['name'])).lower() in titles[x]:
+                        #print(result['tracks']['items'][y]['name'])
+                        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
+                                                    client_id="c23b1f6bf08b432ba41e399c5875041d",
+                                                    client_secret="6f5e550b3da546b89769447f743187b7",
+                                                    redirect_uri="http://localhost:3000"))
+                        trackID = ['']
+                        trackID[0] = result['tracks']['items'][y]['external_urls']['spotify']
+                        sp.playlist_add_items(createdPlaylistId, trackID)
+                        print("adding: " + titles[x])
+                        #function for adding placed here
+                        found = True
+                        continue
+                except:
+                    if  katsu.romaji(result['tracks']['items'][y]['artists'][0]['name']) in titles[x]:
+                        #print(result['tracks']['items'][y]['name'])
+                        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
+                                                    client_id="c23b1f6bf08b432ba41e399c5875041d",
+                                                    client_secret="6f5e550b3da546b89769447f743187b7",
+                                                    redirect_uri="http://localhost:3000"))
+                        trackID = ['']
+                        trackID[0] = result['tracks']['items'][y]['external_urls']['spotify']
+                        sp.playlist_add_items(createdPlaylistId, trackID)
+                        print("adding: " + titles[x])
+                        #function for adding placed here
+                        found = True
+                        continue
+
+
         
         for y in range(loopsForTracks):
             if found == False:
                 result = sp.search(query, limit = 50, offset = y * 50)
                 for z in range(len(result['tracks']['items'])):
                     #print(result['tracks']['items'][z]['name'])
-                    if katsu.romaji(result['tracks']['items'][z]['name']) in titles[x]:
+                    if (katsu.romaji(result['tracks']['items'][z]['name'])).lower() in titles[x]:
                         sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
                                                 client_id="c23b1f6bf08b432ba41e399c5875041d",
                                                 client_secret="6f5e550b3da546b89769447f743187b7",
@@ -238,14 +311,33 @@ for x in range(len(titles)):
                         found = True
                         continue
         if found == False:
-            couldNotFind = True
+            result = sp.search(backupQuery,type = 'track', limit = 50, offset = 0)
+            print("trying: " + jpnTitles[x] + " by " + jpnArtist[x])
+            while (found == False and couldNotFind == False):
+                for y in range (len(result['tracks']['items'])):
+                    if found == False:
+                        if ((result['tracks']['items'][y]['name'])) in jpnTitles[x]:
+                            #print(result['tracks']['items'][y]['name'])
+                            sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
+                                                        client_id="c23b1f6bf08b432ba41e399c5875041d",
+                                                        client_secret="6f5e550b3da546b89769447f743187b7",
+                                                        redirect_uri="http://localhost:3000"))
+                            trackID = ['']
+                            trackID[0] = result['tracks']['items'][y]['external_urls']['spotify']
+                            sp.playlist_add_items(createdPlaylistId, trackID)
+                            print("adding: " + jpnTitles[x])
+                            #function for adding placed here
+                            found = True
+                            continue
+                if found == False:
+                    couldNotFind = True
 
 
     if found == False:
         print("Could not find: " + titles[x])
         
 
-
+print("finished transfer")
 
 
 #then we will use the add function to add the songs to the playlist
