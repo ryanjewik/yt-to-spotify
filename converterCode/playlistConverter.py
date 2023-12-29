@@ -23,15 +23,22 @@ DEVELOPER_KEY = "AIzaSyBcsEhle2A5jxZIO15bym6ilr4iAqX8kdo"
 youtube = googleapiclient.discovery.build(
     api_service_name, api_version, developerKey = DEVELOPER_KEY)
 
+#user must input these themselves
+clientId = "c23b1f6bf08b432ba41e399c5875041d"
+clientSecret = "6f5e550b3da546b89769447f743187b7"
+playlistName = 'JapJam'
+channel_id = "UCz6IPC7i4PQGMPtfhV01H6w"
+
+
 #retrieve the playlist ID using the channel ID
 request = youtube.playlists().list(
     part="snippet",
-    channelId="UCz6IPC7i4PQGMPtfhV01H6w",
+    channelId=channel_id,
     maxResults=40
 )
 response = request.execute()
-for x in range(len(response['items'])):
-    if (response['items'][x]['snippet']['title']) == 'JapJam':
+for x in range(len(response['items'])): #looks for my playlist named "JapJam"
+    if (response['items'][x]['snippet']['title']) == playlistName:
         index = x
 playlistID = response['items'][index]['id']
 
@@ -42,7 +49,7 @@ request = youtube.playlistItems().list(
     maxResults = 50,
     playlistId=playlistID
 )
-# Query execution
+# Must find the number of pages that we must sift through
 response = request.execute()
 loops = response['pageInfo']['totalResults'] / response['pageInfo']['resultsPerPage']
 if loops % 1 < .5:
@@ -58,8 +65,10 @@ for i in range(50):
     artist = ""
     jpnWord = ""
     jpnChannel = ""
+    #will not add the video if the video is private or deleted
     if response['items'][i]['snippet']['title'] != "Deleted video" and response['items'][i]['snippet']['title'] != ("Private video"):
         
+        #cleaning the titles and artist names to make it easier for spotify to read
         if response['items'][i]['snippet']['videoOwnerChannelTitle'][-8:] == " - Topic":
             artist = (response['items'][i]['snippet']['videoOwnerChannelTitle'][:-8]).lower()
             
@@ -107,7 +116,7 @@ for i in range(50):
         
 
 
-for x in range(loops - 1):
+for x in range(loops - 1): #will loop through the pages of youtube call
     nextPageToken = response['nextPageToken']
     request = youtube.playlistItems().list(
     part="snippet",
@@ -122,11 +131,12 @@ for x in range(loops - 1):
         jpnWord = ""
         jpnChannel = ""
         if response['items'][y]['snippet']['title'] != "Deleted video" and response['items'][y]['snippet']['title'] != ("Private video"):
+            #same text cleaning as before
             if response['items'][y]['snippet']['videoOwnerChannelTitle'][-8:] == " - Topic":
                 artist = (response['items'][y]['snippet']['videoOwnerChannelTitle'][:-8]).lower()
             else:
                 artist = (response['items'][y]['snippet']['videoOwnerChannelTitle']).lower()
-            jpnChannel = jpnChannel.replace(" - topic", "")
+            
             artist = artist.replace("official", "")
             artist = artist.replace(" channel", "")
             artist = artist.replace(" youtube", "")
@@ -156,6 +166,7 @@ for x in range(loops - 1):
             jpnWord = jpnWord.replace("]", "")
             jpnWord = jpnWord.replace(" - ", "")
             jpnWord = jpnWord.replace("mv", "")
+            jpnChannel = jpnChannel.replace(" - topic", "")
             jpnChannel = jpnChannel.replace("official", "")
             jpnChannel = jpnChannel.replace(" channel", "")
             jpnChannel = jpnChannel.replace(" youtube", "")
@@ -166,142 +177,111 @@ for x in range(loops - 1):
             jpnTitles.append(jpnWord)
             jpnArtist.append(jpnChannel)
 
-# Print the results
-#print(titles)
-#print(artists)
-#print(len(titles))
-for x in range(len(titles)):
-    if titles[x] == "Deleted video":
-        titles.remove(titles[x])
-        artists.remove(artists[x])
-#for x in range(len(titles)):
-    #print("Track: " + titles[x] + " by " + artists[x])
-#print(len(titles))
-#print(len(artists))
 
-#---------------------------------------------------youtube section-------------------------------------
+#---------------------------------------------------youtube section above-------------------------------------
 
 #creates the playlist
 logger = logging.getLogger('examples.create_playlist')
-#logging.basicConfig(level='DEBUG')
 
 
-def get_args_playlistCreate():
+def get_args_playlistCreate(): #will read the playlist name and description if the user decides to add
     parser = argparse.ArgumentParser(description='Creates a playlist for user')
     
     parser.add_argument('-p', '--playlist', required=True,
                         help='Name of Playlists')
     parser.add_argument('-d', '--description', required=False, default='',
                         help='Description of Playlist')
-    
-    #parser.add_argument(playlist = "test2")
     return parser.parse_args()
 
 
+#this call will create the playlist using the argument that was passed in
 args = get_args_playlistCreate()
-#print(args)
-
 scope = "playlist-modify-public"
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope,
-                                                client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                                client_secret="6f5e550b3da546b89769447f743187b7",
+                                                client_id=clientId,
+                                                client_secret=clientSecret,
                                                 redirect_uri="http://localhost:3000"))
 user_id = sp.me()['id']
 playlistName = args.playlist
 sp.user_playlist_create(user_id, playlistName)
-
 print("playlist created")
 
+
 #first we will want to get the playlist ID to add the playlist we just created
-
-
 scope = 'playlist-read-private'
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope,
-                                               client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                               client_secret="6f5e550b3da546b89769447f743187b7",
+                                               client_id=clientId,
+                                               client_secret=clientSecret,
                                                redirect_uri="http://localhost:3000"))
 
+#we will find the playlist that we just created and use that playlist to add to
 results = sp.current_user_playlists(limit=50)
 for i, item in enumerate(results['items']):
     if item['name'] == playlistName:
-        #createdPlaylistId = item['id']
         createdPlaylistId = item['uri'][17:]
-    #print("%d %s" % (i, item['id']))
 print("playlist id: " + createdPlaylistId)
 
 #then we will use the list of artists names and titles to get the links for the songs
 
 
 
-
-
-
-sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                                                         client_secret="6f5e550b3da546b89769447f743187b7"))
+sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=clientId,
+                                                                         client_secret=clientSecret))
 for x in range(len(titles)):
     artistName = artists[x]
     titleName = titles[x]
     jpnTitle = jpnTitles[x]
     jpnName = jpnArtist[x]
-    query = "artist:"+artistName
-    backupQuery = "artist:" + jpnName
-    #query = "artist:Aimer track:Katamoi"
-    #print("query:" + query)
+    query = "artist:"+artistName #this query is the romanized query
+    backupQuery = "artist:" + jpnName # the backup query is the japanese character query
     result = sp.search(query,type = 'track', limit = 50, offset = 0)
 
-    #pprint.pprint(result['tracks']['total'])
+    #we must calculate how many pages to loop through
     loopsForTracks = result['tracks']['total'] / 100
     if loopsForTracks % 1 < 0.5:
         loopsForTracks +=1
     loopsForTracks = round(loopsForTracks)
     found = False
     couldNotFind = False
-    #print("title: " + titles[x])
-    #print("person: " + artistName)
     while (found == False and couldNotFind == False):
         
-        for y in range (len(result['tracks']['items'])):
+        for y in range (len(result['tracks']['items'])): # will loop through the intial call
             if found == False:
-                try:
+                try: # we will use 'in' because the youtube title name is often longer than the spotify name
                     if (katsu.romaji(result['tracks']['items'][y]['name'])).lower() in titles[x]:
-                        #print(result['tracks']['items'][y]['name'])
                         sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
-                                                    client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                                    client_secret="6f5e550b3da546b89769447f743187b7",
+                                                    client_id=clientId,
+                                                    client_secret=clientSecret,
                                                     redirect_uri="http://localhost:3000"))
                         trackID = ['']
                         trackID[0] = result['tracks']['items'][y]['external_urls']['spotify']
                         sp.playlist_add_items(createdPlaylistId, trackID)
                         print("adding: " + titles[x])
-                        #function for adding placed here
                         found = True
                         continue
-                except:
+                except: #if the lowercase romaji name returns an error just run the same call without the lower
                     if  katsu.romaji(result['tracks']['items'][y]['artists'][0]['name']) in titles[x]:
-                        #print(result['tracks']['items'][y]['name'])
                         sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
-                                                    client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                                    client_secret="6f5e550b3da546b89769447f743187b7",
+                                                    client_id=clientId,
+                                                    client_secret=clientSecret,
                                                     redirect_uri="http://localhost:3000"))
                         trackID = ['']
                         trackID[0] = result['tracks']['items'][y]['external_urls']['spotify']
                         sp.playlist_add_items(createdPlaylistId, trackID)
                         print("adding: " + titles[x])
-                        #function for adding placed here
                         found = True
                         continue
 
 
-        
+        #will search through the additional pages to find the track
         for y in range(loopsForTracks):
             if found == False:
                 result = sp.search(query, limit = 50, offset = y * 50)
                 for z in range(len(result['tracks']['items'])):
-                    #print(result['tracks']['items'][z]['name'])
                     if (katsu.romaji(result['tracks']['items'][z]['name'])).lower() in titles[x]:
                         sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
-                                                client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                                client_secret="6f5e550b3da546b89769447f743187b7",
+                                                client_id=clientId,
+                                                client_secret=clientSecret,
                                                 redirect_uri="http://localhost:3000"))
                         trackID = ['']
                         trackID[0] = result['tracks']['items'][z]['external_urls']['spotify']
@@ -310,7 +290,9 @@ for x in range(len(titles)):
                         #function for adding placed here
                         found = True
                         continue
-        if found == False:
+
+        #this will use the japanese character title & artist name to search on spotify if the romanji version fails
+        if found == False: 
             result = sp.search(backupQuery,type = 'track', limit = 50, offset = 0)
             print("trying: " + jpnTitles[x] + " by " + jpnArtist[x])
             while (found == False and couldNotFind == False):
@@ -319,8 +301,8 @@ for x in range(len(titles)):
                         if ((result['tracks']['items'][y]['name'])) in jpnTitles[x]:
                             #print(result['tracks']['items'][y]['name'])
                             sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope='playlist-modify-public',
-                                                        client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                                        client_secret="6f5e550b3da546b89769447f743187b7",
+                                                        client_id=clientId,
+                                                        client_secret=clientSecret,
                                                         redirect_uri="http://localhost:3000"))
                             trackID = ['']
                             trackID[0] = result['tracks']['items'][y]['external_urls']['spotify']
@@ -332,39 +314,10 @@ for x in range(len(titles)):
                 if found == False:
                     couldNotFind = True
 
-
+    #notifies user if it fails to find the track
     if found == False:
         print("Could not find: " + titles[x])
         
 
 print("finished transfer")
 
-
-#then we will use the add function to add the songs to the playlist
-
-#adds to playlist using a link
-
-"""
-logger = logging.getLogger('examples.add_tracks_to_playlist')
-logging.basicConfig(level='DEBUG')
-scope = 'playlist-modify-public'
-
-
-def get_args_playlistAdd():
-    parser = argparse.ArgumentParser(description='Adds track to user playlist')
-    parser.add_argument('-u', '--uris', action='append',
-                        required=True, help='Track ids')
-    parser.add_argument('-p', '--playlist', required=True,
-                        help='Playlist to add track to')
-    return parser.parse_args()
-
-
-
-args = get_args_playlistAdd()
-
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope,
-                                                client_id="c23b1f6bf08b432ba41e399c5875041d",
-                                                client_secret="6f5e550b3da546b89769447f743187b7",
-                                                redirect_uri="http://localhost:3000"))
-sp.playlist_add_items(args.playlist, args.uris)
-"""
