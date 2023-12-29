@@ -186,9 +186,14 @@ sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_
                                                                          client_secret="6f5e550b3da546b89769447f743187b7"))
 for x in range(len(titles)):
     artistName = artists[x]
-    result = sp.search(artistName,limit = 50, offset = 0)
+    titleName = titles[x]
+    query = "artist:"+artistName
+    #query = "artist:Aimer track:Katamoi"
+    #print("query:" + query)
+    result = sp.search(query,type = 'track', limit = 50, offset = 0)
+    
     #pprint.pprint(result['tracks']['items'][49]['name'])
-    #pprint.pprint(result['tracks']['total'])
+    pprint.pprint(result['tracks']['total'])
     loopsForTracks = result['tracks']['total'] / 100
     if loopsForTracks % 1 < 0.5:
         loopsForTracks +=1
@@ -217,7 +222,7 @@ for x in range(len(titles)):
         
         for y in range(loopsForTracks):
             if found == False:
-                result = sp.search(artistName, limit = 50, offset = y * 50)
+                result = sp.search(query, limit = 50, offset = y * 50)
                 for z in range(len(result['tracks']['items'])):
                     #print(result['tracks']['items'][z]['name'])
                     if katsu.romaji(result['tracks']['items'][z]['name']) in titles[x]:
